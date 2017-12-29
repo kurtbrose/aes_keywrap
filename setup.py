@@ -9,4 +9,5 @@ setup(
     decription="aes keywrap (RFC 3394 + RFC 5649)",
     long_description = open('README.rst').read(),
     py_modules=['aes_keywrap'],
+    license='MIT',
 )
