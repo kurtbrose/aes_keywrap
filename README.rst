@@ -1,4 +1,5 @@
-# aes_keywrap
+AES keywrap
+'''''''''''
 implementation of RFC 3394 AES key wrapping/unwrapping
 
 http://www.ietf.org/rfc/rfc3394.txt
@@ -14,7 +15,9 @@ In documentation, the key used for this kind of algorithm is
 often called the KEK (Key-Encryption-Key), to distinguish
 it from data encryption keys.
 
-# Why a special key-encryption algorithm?
+
+Why a special key-encryption algorithm?
+'''''''''''''''''''''''''''''''''''''''
 
 In a word: size.  By assuming keys are high enough
 entropy to be globally unique, and small enough
@@ -32,5 +35,5 @@ In an application where there are many keys being generated
 and encrypted (e.g. a separate data encryption key for
 each row in a database), this overhead can be significant.
 
-However, the most likely use case for this algorithm
-is interoperability with existing systems.
+Another important use case is compatibility with
+existing systems.
