@@ -19,6 +19,10 @@ it from data encryption keys.
 usage
 '''''
 
+.. code-block::
+
+    pip install aes-keywrap
+
 .. code-block:: python
 
     import binascii
