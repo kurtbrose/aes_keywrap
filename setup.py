@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='aes-keywrap',
-    version='17.12.0',
+    version='17.12.1',
     url='https://github.com/kurtbrose/aes_keywrap',
     author='Kurt Rose',
     author_email='kurt@kurtrose.com',
