@@ -16,6 +16,19 @@ often called the KEK (Key-Encryption-Key), to distinguish
 it from data encryption keys.
 
 
+usage
+'''''
+
+.. code-block:: python
+    import binascii
+    from aes_keywrap import aes_wrap_key, aes_unwrap_key
+    KEK = binascii.unhexlify("000102030405060708090A0B0C0D0E0F")
+    CIPHER = binascii.unhexlify("1FA68B0A8112B447AEF34BD8FB5A7B829D3E862371D2CFE5")
+    PLAIN = binascii.unhexlify("00112233445566778899AABBCCDDEEFF")
+    assert aes_unwrap_key(KEK, CIPHER) == PLAIN
+    assert aes_wrap_key(KEK, PLAIN) == CIPHER
+
+
 Why a special key-encryption algorithm?
 '''''''''''''''''''''''''''''''''''''''
 

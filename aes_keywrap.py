@@ -9,12 +9,12 @@ from Crypto.Cipher import AES
 
 QUAD = struct.Struct('>Q')
 
-def unwrap_key_and_iv(kek, wrapped):
+def aes_unwrap_key_and_iv(kek, wrapped):
     n = len(wrapped)/8 - 1
     #NOTE: R[0] is never accessed, left in for consistency with RFC indices
     R = [None]+[wrapped[i*8:i*8+8] for i in range(1, n+1)]
     A = QUAD.unpack(wrapped[:8])[0]
-    decrypt = AES.new(kek).decrypt
+    decrypt = AES.new(kek, AES.MODE_ECB).decrypt
     for j in range(5,-1,-1): #counting down
         for i in range(n, 0, -1): #(n, n-1, ..., 1)
             ciphertext = QUAD.pack(A^(n*j+i)) + R[i]
@@ -24,7 +24,7 @@ def unwrap_key_and_iv(kek, wrapped):
     return "".join(R[1:]), A
 
 
-def unwrap_key(kek, wrapped, iv=0xa6a6a6a6a6a6a6a6):
+def aes_unwrap_key(kek, wrapped, iv=0xa6a6a6a6a6a6a6a6):
     '''
     key wrapping as defined in RFC 3394
     http://www.ietf.org/rfc/rfc3394.txt
@@ -35,13 +35,13 @@ def unwrap_key(kek, wrapped, iv=0xa6a6a6a6a6a6a6a6):
     return key
 
 
-def unwrap_key_withpad(kek, wrapped):
+def aes_unwrap_key_withpad(kek, wrapped):
     '''
     alternate initial value for aes key wrapping, as defined in RFC 5649 section 3
     http://www.ietf.org/rfc/rfc5649.txt
     '''
     if len(wrapped) == 16:
-        plaintext = AES.new(kek).decrypt(wrapped)
+        plaintext = AES.new(kek, AES.MODE_ECB).decrypt(wrapped)
         key, key_iv = plaintext[:8], plaintext[8:]
     else:
         key, key_iv = aes_unwrap_key_and_iv(kek, wrapped)
@@ -51,11 +51,11 @@ def unwrap_key_withpad(kek, wrapped):
     key_len = int(key_iv[8:], 16)
     return key[:key_len]
 
-def wrap_key(kek, plaintext, iv=0xa6a6a6a6a6a6a6a6):
+def aes_wrap_key(kek, plaintext, iv=0xa6a6a6a6a6a6a6a6):
     n = len(plaintext)/8
     R = [None]+[plaintext[i*8:i*8+8] for i in range(0, n)]
     A = iv
-    encrypt = AES.new(kek).encrypt
+    encrypt = AES.new(kek, AES.MODE_ECB).encrypt
     for j in range(6):
         for i in range(1, n+1):
             B = encrypt(QUAD.pack(A) + R[i])
@@ -63,11 +63,11 @@ def wrap_key(kek, plaintext, iv=0xa6a6a6a6a6a6a6a6):
             R[i] = B[8:]
     return QUAD.pack(A) + "".join(R[1:])
 
-def wrap_key_withpad(kek, plaintext):
+def aes_wrap_key_withpad(kek, plaintext):
     iv = 0xA65959A600000000 + len(plaintext)
-    plaintext = plaintext + "\0" * ((8 - len(plaintext)) % 8)
+    plaintext = plaintext + b"\0" * ((8 - len(plaintext)) % 8)
     if len(plaintext) == 8:
-        return AES.new(kek).encrypt(QUAD.pack[iv] + plaintext)
+        return AES.new(kek, AES.MODE_ECB).encrypt(QUAD.pack[iv] + plaintext)
     return aes_wrap_key(kek, plaintext, iv)
 
 def test():
