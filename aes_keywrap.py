@@ -10,7 +10,7 @@ from Crypto.Cipher import AES
 QUAD = struct.Struct('>Q')
 
 def aes_unwrap_key_and_iv(kek, wrapped):
-    n = len(wrapped)/8 - 1
+    n = len(wrapped)//8 - 1
     #NOTE: R[0] is never accessed, left in for consistency with RFC indices
     R = [None]+[wrapped[i*8:i*8+8] for i in range(1, n+1)]
     A = QUAD.unpack(wrapped[:8])[0]
@@ -21,7 +21,7 @@ def aes_unwrap_key_and_iv(kek, wrapped):
             B = decrypt(ciphertext)
             A = QUAD.unpack(B[:8])[0]
             R[i] = B[8:]
-    return "".join(R[1:]), A
+    return b"".join(R[1:]), A
 
 
 def aes_unwrap_key(kek, wrapped, iv=0xa6a6a6a6a6a6a6a6):
@@ -52,7 +52,7 @@ def aes_unwrap_key_withpad(kek, wrapped):
     return key[:key_len]
 
 def aes_wrap_key(kek, plaintext, iv=0xa6a6a6a6a6a6a6a6):
-    n = len(plaintext)/8
+    n = len(plaintext)//8
     R = [None]+[plaintext[i*8:i*8+8] for i in range(0, n)]
     A = iv
     encrypt = AES.new(kek, AES.MODE_ECB).encrypt
@@ -61,7 +61,7 @@ def aes_wrap_key(kek, plaintext, iv=0xa6a6a6a6a6a6a6a6):
             B = encrypt(QUAD.pack(A) + R[i])
             A = QUAD.unpack(B[:8])[0] ^ (n*j + i)
             R[i] = B[8:]
-    return QUAD.pack(A) + "".join(R[1:])
+    return QUAD.pack(A) + b"".join(R[1:])
 
 def aes_wrap_key_withpad(kek, plaintext):
     iv = 0xA65959A600000000 + len(plaintext)
