@@ -42,7 +42,7 @@ def aes_unwrap_key_withpad(kek, wrapped):
     '''
     if len(wrapped) == 16:
         plaintext = AES.new(kek, AES.MODE_ECB).decrypt(wrapped)
-        key, key_iv = plaintext[:8], plaintext[8:]
+        key, key_iv = plaintext[8:], QUAD.unpack(plaintext[:8])[0]
     else:
         key, key_iv = aes_unwrap_key_and_iv(kek, wrapped)
     key_iv = "{0:016X}".format(key_iv)
@@ -67,7 +67,7 @@ def aes_wrap_key_withpad(kek, plaintext):
     iv = 0xA65959A600000000 + len(plaintext)
     plaintext = plaintext + b"\0" * ((8 - len(plaintext)) % 8)
     if len(plaintext) == 8:
-        return AES.new(kek, AES.MODE_ECB).encrypt(QUAD.pack[iv] + plaintext)
+        return AES.new(kek, AES.MODE_ECB).encrypt(QUAD.pack(iv) + plaintext)
     return aes_wrap_key(kek, plaintext, iv)
 
 def test():
@@ -78,3 +78,17 @@ def test():
     PLAIN = binascii.unhexlify("00112233445566778899AABBCCDDEEFF")
     assert aes_unwrap_key(KEK, CIPHER) == PLAIN
     assert aes_wrap_key(KEK, PLAIN) == CIPHER
+
+    #test vector from RFC 5649 - 20 octets
+    KEK = binascii.unhexlify("5840DF6E29B02AF1AB493B705BF16EA1AE8338F4DCC176A8")
+    CIPHER = binascii.unhexlify("138BDEAA9B8FA7FC61F97742E72248EE5AE6AE5360D1AE6A5F54F373FA543B6A")
+    PLAIN = binascii.unhexlify("C37B7E6492584340BED12207808941155068F738")
+    assert aes_unwrap_key_withpad(KEK, CIPHER) == PLAIN
+    assert aes_wrap_key_withpad(KEK, PLAIN) == CIPHER
+
+    #test vector from RFC 5649 - 7 octets
+    KEK = binascii.unhexlify("5840DF6E29B02AF1AB493B705BF16EA1AE8338F4DCC176A8")
+    CIPHER = binascii.unhexlify("AFBEB0F07DFBF5419200F2CCB50BB24F")
+    PLAIN = binascii.unhexlify("466F7250617369")
+    assert aes_unwrap_key_withpad(KEK, CIPHER) == PLAIN
+    assert aes_wrap_key_withpad(KEK, PLAIN) == CIPHER
