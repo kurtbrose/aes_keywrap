@@ -10,4 +10,5 @@ setup(
     long_description = open('README.rst').read(),
     py_modules=['aes_keywrap'],
     license='MIT',
+    install_requires=['pycryptodome'],
 )
